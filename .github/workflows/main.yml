@@ -25,7 +25,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: .assignees[].login, labels: .labels[].name}')
+          ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: [.assignees[].login], labels: [.labels[].name]}')
           echo "ISSUE_DATA=${ISSUE_DATA}" >> $GITHUB_ENV
 
       - name: Check for Existing PR
@@ -46,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | map(.login) | join(", ")')
+          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(", ")')
           LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(", ")')
 
           TEAM_MEMBERS=("unifolio0" "jongmee" "dwax1324" "jinchiim")
