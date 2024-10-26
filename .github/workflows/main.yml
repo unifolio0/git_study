@@ -15,6 +15,7 @@ jobs:
       - name: Get Issue Number
         id: get_issue
         run: |
+          echo "${GITHUB_REF} - branch name"
           echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
           ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | grep -oP '#\K\d+')
           echo "ISSUE_NUMBER=${ISSUE_NUMBER}" >> $GITHUB_ENV
