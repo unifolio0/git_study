@@ -36,6 +36,7 @@ jobs:
           BASE_BRANCH="be/develop"
           echo "BASE_BRANCH=${BASE_BRANCH}" >> $GITHUB_ENV
           EXISTING_PR=$(gh pr list --state open --base "${BASE_BRANCH}" --head "${{ env.BRANCH_NAME }}" --json number --jq '.[0].number')
+          echo "${EXISTING_PR} - print"
 
           if [ -n "$EXISTING_PR" ]; then
             echo "An existing PR #${EXISTING_PR} already exists for this issue and branch. Exiting..."
