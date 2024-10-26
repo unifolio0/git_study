@@ -47,7 +47,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(", ")')
-          echo "ASSIGNEES=${ASSIGNEES}" >> $GITHUB_ENV
+          echo "${ASSIGNEES} - print"
           LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(", ")')
           echo "LABELS=${LABELS}" >> $GITHUB_ENV
 
