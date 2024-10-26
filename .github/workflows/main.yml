@@ -46,8 +46,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | map(.login) | join(", ")')
+          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(", ")')
+          echo "${ASSIGNEES} - print"
           LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(", ")')
+          echo "${LABELS} - print"
 
           TEAM_MEMBERS=("unifolio0" "jongmee" "dwax1324" "jinchiim")
           
