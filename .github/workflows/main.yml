@@ -23,6 +23,8 @@ jobs:
 
       - name: Get Issue Details
         id: get_issue_details
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: .assignees[].login, labels: .labels[].name}')
           echo "ISSUE_DATA=${ISSUE_DATA}" >> $GITHUB_ENV
