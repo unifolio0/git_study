@@ -76,4 +76,4 @@ jobs:
           
           echo "${{ env.ISSUE_TITLE }}"
           echo "${{ env.PR_BODY }}"
-          gh pr create --base "${{ env.BASE_BRANCH }}" --head "${{ env.BRANCH_NAME }}" --title "${{ env.ISSUE_TITLE }}" --body "${{ env.PR_BODY }}" --assignee "${{ env.ASSIGNEES }}" --reviewer "${{ env.REVIEWER_LIST }}" --label "${{ env.LABELS }}"
+          gh pr create --base "${{ env.BASE_BRANCH }}" --head "${{ env.BRANCH_NAME }}" --title "${ISSUE_TITLE}" --body "${{ env.PR_BODY }}" --assignee "${{ env.ASSIGNEES }}" --reviewer "${{ env.REVIEWER_LIST }}" --label "${{ env.LABELS }}"
