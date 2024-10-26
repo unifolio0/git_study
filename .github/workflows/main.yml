@@ -73,7 +73,7 @@ jobs:
           TASK_ITEMS=$(echo "${ISSUE_BODY}" | awk '/✨ Task/,/✨ Time/' | sed '1d;$d')
           echo "TASK_ITEMS : ${TASK_ITEMS} - print"
 
-          read -r -d '' PR_BODY << EOM
+          PR_BODY=$(cat <<EOM
           ## 🍄 PR 확인 사항
           
           PR이 다음 요구 사항을 충족하는지 확인하세요. :
@@ -91,6 +91,7 @@ jobs:
           - [ ] 있음
           - [ ] 없음
           EOM
+          )
           
           echo "PR_BODY : ${PR_BODY} - print"
           
