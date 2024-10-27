@@ -18,14 +18,15 @@ jobs:
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | grep -oP '#\K\d+')
+          echo "ISSUE_NUMBER=${ISSUE_NUMBER}" >> $GITHUB_ENV
+
       - name: Get Issue Details
         id: get_issue_details
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "$ISSUE_NUMBER = print"
-          echo "${BRANCH_NAME} = print"
           ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: [.assignees[].login], labels: [.labels[].name]}')
+
       - name: Check for Existing PR
         id: check_pr
         env:
@@ -34,23 +35,21 @@ jobs:
           BASE_BRANCH="be/develop"
           echo "BASE_BRANCH=${BASE_BRANCH}" >> $GITHUB_ENV
           EXISTING_PR=$(gh pr list --state open --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --json number --jq '.[0].number')
-          echo "${EXISTING_PR} - print"
           if [ -n "$EXISTING_PR" ]; then
             echo "An existing PR #${EXISTING_PR} already exists for this issue and branch. Exiting..."
-            EXISTING_PR="true"
+            echo "EXISTING_PR=true" >> $GITHUB_ENV
             exit 0
           else
-            EXISTING_PR="false"
+            echo "EXISTING_PR=false" >> $GITHUB_ENV
           fi
+
       - name: Create Pull Request
         if: env.EXISTING_PR == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(", ")')
-          echo "ASSIGNEES : ${ASSIGNEES} - print"
           LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(", ")')
-          echo "LABELS : ${LABELS} - print"
           TEAM_MEMBERS=("unifolio0" "jongmee" "dwax1324" "jinchiim")
           IFS=', ' read -r -a ASSIGNEE_ARRAY <<< "${ASSIGNEES}"
           REVIEWERS=()
@@ -60,13 +59,9 @@ jobs:
             fi
           done
           REVIEWER_LIST=$(IFS=', '; echo "${REVIEWERS[*]}")
-          echo "REVIEWER_LIST : ${REVIEWER_LIST} - print"
           ISSUE_TITLE=$(echo "${ISSUE_DATA}" | jq -r '.title')
-          echo "ISSUE_TITLE : ${ISSUE_TITLE} - print"
           ISSUE_BODY=$(echo "${ISSUE_DATA}" | jq -r '.body')
-          echo "ISSUE_BODY : ${ISSUE_BODY} - print"
           TASK_ITEMS=$(echo "${ISSUE_BODY}" | awk '/✨ Task/,/✨ Time/' | sed '1d;$d')
-          echo "TASK_ITEMS : ${TASK_ITEMS} - print"
           PR_BODY=$(cat <<EOM
           ## 🍄 PR 확인 사항
           
