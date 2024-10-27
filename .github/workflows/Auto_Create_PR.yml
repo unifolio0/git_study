@@ -26,6 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: [.assignees[].login], labels: [.labels[].name]}')
+          echo "ISSUE_DATA=${ISSUE_DATA}" >> $GITHUB_ENV
 
       - name: Check for Existing PR
         id: check_pr
@@ -80,7 +81,4 @@ jobs:
           - [ ] 없음
           EOM
           )
-          
-          echo "PR_BODY : ${PR_BODY} - print"
-          
           gh pr create --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --title "${ISSUE_TITLE}" --body "${PR_BODY}" --assignee "${ASSIGNEES}" --reviewer "${REVIEWER_LIST}" --label "${LABELS}"
