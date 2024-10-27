@@ -1,0 +1,88 @@
+name: Create PR from Branch
+
+on:
+  push:
+    branches:
+      - 'be/**'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Get Issue Number
+        id: get_issue
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | grep -oP '#\K\d+')
+      - name: Get Issue Details
+        id: get_issue_details
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: [.assignees[].login], labels: [.labels[].name]}')
+      - name: Check for Existing PR
+        id: check_pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BASE_BRANCH="be/develop"
+          echo "BASE_BRANCH=${BASE_BRANCH}" >> $GITHUB_ENV
+          EXISTING_PR=$(gh pr list --state open --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --json number --jq '.[0].number')
+          echo "${EXISTING_PR} - print"
+          if [ -n "$EXISTING_PR" ]; then
+            echo "An existing PR #${EXISTING_PR} already exists for this issue and branch. Exiting..."
+            EXISTING_PR="true"
+            exit 0
+          else
+            EXISTING_PR="false"
+          fi
+      - name: Create Pull Request
+        if: env.EXISTING_PR == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(", ")')
+          echo "ASSIGNEES : ${ASSIGNEES} - print"
+          LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(", ")')
+          echo "LABELS : ${LABELS} - print"
+          TEAM_MEMBERS=("unifolio0" "jongmee" "dwax1324" "jinchiim")
+          IFS=', ' read -r -a ASSIGNEE_ARRAY <<< "${ASSIGNEES}"
+          REVIEWERS=()
+          for MEMBER in "${TEAM_MEMBERS[@]}"; do
+            if [[ ! " ${ASSIGNEE_ARRAY[@]} " =~ " ${MEMBER} " ]]; then
+              REVIEWERS+=("${MEMBER}")
+            fi
+          done
+          REVIEWER_LIST=$(IFS=', '; echo "${REVIEWERS[*]}")
+          echo "REVIEWER_LIST : ${REVIEWER_LIST} - print"
+          ISSUE_TITLE=$(echo "${ISSUE_DATA}" | jq -r '.title')
+          echo "ISSUE_TITLE : ${ISSUE_TITLE} - print"
+          ISSUE_BODY=$(echo "${ISSUE_DATA}" | jq -r '.body')
+          echo "ISSUE_BODY : ${ISSUE_BODY} - print"
+          TASK_ITEMS=$(echo "${ISSUE_BODY}" | awk '/✨ Task/,/✨ Time/' | sed '1d;$d')
+          echo "TASK_ITEMS : ${TASK_ITEMS} - print"
+          PR_BODY=$(cat <<EOM
+          ## 🍄 PR 확인 사항
+          
+          PR이 다음 요구 사항을 충족하는지 확인하세요. :
+          
+            - [ ] API 명세서가 업데이트 혹은 작성이 되어 있나요?
+          
+          ## 현재 작업은 어떤 이슈를 해결한 것인지 설명해주세요.
+            > Issue Number: #${ISSUE_NUMBER}
+          
+            ${TASK_ITEMS}
+          
+          ## 기존 코드에서 변경된 점이 있다면 설명해주세요. (추가 X)
+          
+          - [ ] 있음
+          - [ ] 없음
+          EOM
+          )
+          
+          echo "PR_BODY : ${PR_BODY} - print"
+          
+          gh pr create --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --title "${ISSUE_TITLE}" --body "${PR_BODY}" --assignee "${ASSIGNEES}" --reviewer "${REVIEWER_LIST}" --label "${LABELS}"
