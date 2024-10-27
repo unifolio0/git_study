@@ -23,6 +23,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "${ISSUE_NUMBER} = print"
+          echo "${BRANCH_NAME} = print"
           ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body,assignees,labels --jq '{title: .title, body: .body, assignees: [.assignees[].login], labels: [.labels[].name]}')
       - name: Check for Existing PR
         id: check_pr
