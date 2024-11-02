@@ -82,12 +82,3 @@ jobs:
           EOM
           )
           gh pr create --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --title "${ISSUE_TITLE}" --body "${PR_BODY}" --assignee "${ASSIGNEES}" --reviewer "${REVIEWER_LIST}" --label "${LABELS}"
-          echo "NOTIFY_CHECKBOX=true" >> $GITHUB_ENV
-
-      - name: Trigger Notification Workflow
-        if: env.NOTIFY_CHECKBOX == 'true'
-        run: |
-          echo "Triggering Notification_Checkbox_PR workflow"
-          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/actions/workflows/Notification_Checkbox_PR.yml/dispatches \
-          -d '{"ref": "'"${BRANCH_NAME}"'"}'
