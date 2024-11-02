@@ -25,6 +25,7 @@ jobs:
         if: env.client_checked == 'true'
         env:
           WEB_HOOK: ${{ secrets.AN_DISCORD_WEB_HOOK }}
+          AVATAR_URL: ${{ secrets.ISSUE_NOTI_AVATAR_URL }}
         run: |
           ISSUE_TITLE="${{ github.event.issue.title }}"
           ISSUE_URL="${{ github.event.issue.html_url }}"
@@ -35,7 +36,7 @@ jobs:
                -d "$(jq -n \
                      --arg content "API 관련 수정이 있습니다!" \
                      --arg username "팽도리" \
-                     --arg avatar_url "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/393.png" \
+                     --arg avatar_url "$AVATAR_URL" \
                      --arg issue_title "$ISSUE_TITLE" \
                      --arg issue_url "$ISSUE_URL" \
                      --arg author_name "$AUTHOR_NAME" \
