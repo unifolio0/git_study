@@ -15,7 +15,7 @@ jobs:
       - name: Get Issue Number
         id: get_issue
         run: |
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BRANCH_NAME=${GITHUB_REF_NAME}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | grep -oP '#\K\d+')
           echo "ISSUE_NUMBER=${ISSUE_NUMBER}" >> $GITHUB_ENV
@@ -49,8 +49,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(", ")')
-          LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(", ")')
+          ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(",")')
+          LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(",")')
           TEAM_MEMBERS=("unifolio0" "jongmee" "dwax1324" "jinchiim")
           IFS=', ' read -r -a ASSIGNEE_ARRAY <<< "${ASSIGNEES}"
           REVIEWERS=()
