@@ -1,4 +1,4 @@
-name: Notification Checkbox Issue
+name: Notification Checkbox PR
 
 on:
   pull_request:
