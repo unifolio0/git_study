@@ -1,0 +1,30 @@
+name: Client Checkbox Update Notification
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Client Checkbox Status
+        uses: actions/github-script@v3
+        id: check-client-checkbox
+        with:
+          script: |
+            const body = context.payload.issue.body;
+            const clientSection = body.match(/✨ Client\n---\n((?:- \[.\] .+\n?)+)/);
+            let clientChecked = false;
+            if (clientSection) {
+              clientChecked = clientSection[1].includes("- [x]");
+            }
+            core.setOutput("clientChecked", clientChecked);
+
+      - name: Send Discord Notification
+        if: steps.check-client-checkbox.outputs.clientChecked == 'true'
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"Issue #${{ github.event.issue.number }}: Client-related changes detected! 🚀\"}" \
+          ${{ secrets.AN_DISCORD_WEBHOOK_URL }}
