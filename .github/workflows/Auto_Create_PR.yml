@@ -63,6 +63,13 @@ jobs:
           ISSUE_TITLE=$(echo "${ISSUE_DATA}" | jq -r '.title')
           ISSUE_BODY=$(echo "${ISSUE_DATA}" | jq -r '.body')
           TASK_ITEMS=$(echo "${ISSUE_BODY}" | awk '/✨ Task/,/✨ Time/' | sed '1d;$d')
+          CLIENT_SECTION=$(echo "${ISSUE_BODY}" | awk '/✨ Client/,/✨ Time/' | sed '1d;$d')
+          if echo "${CLIENT_SECTION}" | grep -q "\- \[x\]"; then
+            echo "client_checked=true" >> $GITHUB_ENV
+          else
+            echo "client_checked=false" >> $GITHUB_ENV
+          fi
+          
           PR_BODY=$(cat <<EOM
           ## 🍄 PR 확인 사항
           
@@ -81,4 +88,42 @@ jobs:
           - [ ] 없음
           EOM
           )
-          gh pr create --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --title "${ISSUE_TITLE}" --body "${PR_BODY}" --assignee "${ASSIGNEES}" --reviewer "${REVIEWER_LIST}" --label "${LABELS}"
+          PULL_REQUEST_URL=$(gh pr create --base "${BASE_BRANCH}" --head "${BRANCH_NAME}" --title "${ISSUE_TITLE}" --body "${PR_BODY}" --assignee "${ASSIGNEES}" --reviewer "${REVIEWER_LIST}" --label "${LABELS}" --json url | jq -r '.url')
+
+          echo "PULL_REQUEST_URL=${PULL_REQUEST_URL}" >> $GITHUB_ENV
+
+      - name: Send Discord Notification
+        if: env.client_checked == 'true'
+        env:
+          WEB_HOOK: ${{ secrets.AN_DISCORD_WEB_HOOK }}
+          AVATAR_URL: ${{ secrets.PR_NOTI_AVATAR_URL }}
+        run: |
+          PULL_REQUEST_TITLE="${{ github.event.pull_request.title }}"
+          PULL_REQUEST_URL="${PULL_REQUEST_URL}"
+          AUTHOR_NAME="${{ github.event.pull_request.user.login }}"
+          AUTHOR_AVATAR="${{ github.event.pull_request.user.avatar_url }}"
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$(jq -n \
+                     --arg content "API 관련 수정 PR이 열렸습니다!" \
+                     --arg username "메타몽" \
+                     --arg avatar_url "$AVATAR_URL" \
+                     --arg pull_request_title "$PULL_REQUEST_TITLE" \
+                     --arg pull_request_url "$PULL_REQUEST_URL" \
+                     --arg author_name "$AUTHOR_NAME" \
+                     --arg author_avatar "$AUTHOR_AVATAR" \
+                     '{
+                        content: $content, 
+                        username: $username, 
+                        avatar_url: $avatar_url, 
+                        embeds: [{
+                          title: $pull_request_title, 
+                          url: $pull_request_url,
+                          author: {
+                            name: $author_name,
+                            icon_url: $author_avatar
+                          }
+                        }] 
+                     }'
+                  )" \
+               "$WEB_HOOK"
