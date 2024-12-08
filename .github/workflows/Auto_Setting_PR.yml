@@ -15,7 +15,7 @@ jobs:
       - name: Get Issue Number
         id: get_issue
         run: |
-          PR_DATA=gh pr view 59 --json headRefName
+          PR_DATA=gh pr view ${{ github.event.pull_request.number }} --json headRefName
           echo "PR_DATA=${PR_DATA}" >> $GITHUB_ENV
           BRANCH_NAME=$(echo "${PR_DATA}" | jq -r '.headRefName)
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
