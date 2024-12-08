@@ -18,7 +18,7 @@ jobs:
           BRANCH_NAME=${GITHUB_REF_NAME}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           echo "${BRANCH_NAME}"
-          ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | grep -oP '#\K\d+')
+          ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | awk -F'#' '{print $2}' | grep -Eo '^[0-9]+')
           echo "ISSUE_NUMBER=${ISSUE_NUMBER}" >> $GITHUB_ENV
           echo "${ISSUE_NUMBER}"
 
@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISSUE_DATA=$(gh issue view "1" --json assignees,labels,projectItems --jq '{assignees: [.assignees[].login], labels: [.labels[].name], projects: [.projectItems[].title]}')
+          ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json assignees,labels,projectItems --jq '{assignees: [.assignees[].login], labels: [.labels[].name], projects: [.projectItems[].title]}')
           echo "ISSUE_DATA=${ISSUE_DATA}" >> $GITHUB_ENV
 
       - name: Setting PR
