@@ -37,7 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh auth refresh -s read:project
+          gh auth refresh -s read:project --hostname github.com
           QUERY=$(cat <<'EOF'
           query($owner: String!, $repo: String!, $issueNumber: Int!) {
             repository(owner: $owner, name: $repo) {
