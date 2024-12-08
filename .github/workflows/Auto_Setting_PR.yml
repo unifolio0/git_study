@@ -7,9 +7,6 @@ on:
 jobs:
   assign-issue:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      projects: read
 
     steps:
       - name: Checkout Code
@@ -40,6 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh auth refresh -s read:project
           QUERY=$(cat <<'EOF'
           query($owner: String!, $repo: String!, $issueNumber: Int!) {
             repository(owner: $owner, name: $repo) {
