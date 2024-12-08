@@ -37,6 +37,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          QUERY=$(cat <<'EOF'
+          query($owner: String!, $repo: String!, $issueNumber: Int!) {
+            repository(owner: $owner, name: $repo) {
+              issue(number: $issueNumber) {
+                projectItems(first: 10) {
+                  edges {
+                    node {
+                      project {
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          EOF
+          )
+          RESPONSE=$(gh api graphql -F query="$QUERY" -F owner="unifolio0" -F repo="git-study" -F issueNumber="${ISSUE_NUMBER}")
+          echo "RESPONSE=${RESPONSE}" >> $GITHUB_ENV
+          TITLE=$(echo "${RESPONSE}" | jq -r '.data.repository.issue.projectItems.edges[].node.project.title')
+          echo "TITLE=${TITLE}" >> $GITHUB_ENV
           ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(",")')
           LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(",")')
           PROJECTS=$(echo "${ISSUE_DATA}" | jq -r '.projects | join(",")')
@@ -49,4 +71,4 @@ jobs:
             fi
           done
           REVIEWER_LIST=$(IFS=', '; echo "${REVIEWERS[*]}")
-          gh pr edit ${{ github.event.pull_request.number }} --add-assignee "${ASSIGNEES}" --add-label "${LABELS}" --add-project "PVT_kwHOBzzLmc4At5_g"
+          gh pr edit ${{ github.event.pull_request.number }} --add-assignee "${ASSIGNEES}" --add-label "${LABELS}" --add-project "${TITLE}"
