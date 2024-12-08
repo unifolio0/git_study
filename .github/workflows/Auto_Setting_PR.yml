@@ -49,4 +49,4 @@ jobs:
             fi
           done
           REVIEWER_LIST=$(IFS=', '; echo "${REVIEWERS[*]}")
-          gh pr edit ${{ github.event.pull_request.number }} --add-assignee "${ASSIGNEES}" --add-label "${LABELS}" --add-project "2"
+          gh pr edit ${{ github.event.pull_request.number }} --add-assignee "${ASSIGNEES}" --add-label "${LABELS}" --add-project "PVT_kwHOBzzLmc4At5_g"
