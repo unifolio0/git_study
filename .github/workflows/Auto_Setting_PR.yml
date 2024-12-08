@@ -14,6 +14,8 @@ jobs:
 
       - name: Get Issue Number
         id: get_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PR_DATA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefName)
           echo "PR_DATA=${PR_DATA}" >> $GITHUB_ENV
