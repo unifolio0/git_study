@@ -55,7 +55,7 @@ jobs:
           }
           EOF
           )
-          RESPONSE=$(gh api graphql -F query="$QUERY" -F owner="unifolio0" -F repo="git-study" -F issueNumber="${ISSUE_NUMBER}")
+          RESPONSE=$(gh api graphql -F query="$QUERY" -F owner="unifolio0" -F repo="git_study" -F issueNumber="${ISSUE_NUMBER}")
           echo "RESPONSE=${RESPONSE}" >> $GITHUB_ENV
           TITLE=$(echo "${RESPONSE}" | jq -r '.data.repository.issue.projectItems.edges[].node.project.title')
           echo "TITLE=${TITLE}" >> $GITHUB_ENV
