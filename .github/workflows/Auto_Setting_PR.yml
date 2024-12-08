@@ -59,6 +59,7 @@ jobs:
           echo "RESPONSE=${RESPONSE}" >> $GITHUB_ENV
           TITLE=$(echo "${RESPONSE}" | jq -r '.data.repository.issue.projectItems.edges[].node.project.title')
           echo "TITLE=${TITLE}" >> $GITHUB_ENV
+          echo "${TITLE}"
           ASSIGNEES=$(echo "${ISSUE_DATA}" | jq -r '.assignees | join(",")')
           LABELS=$(echo "${ISSUE_DATA}" | jq -r '.labels | join(",")')
           PROJECTS=$(echo "${ISSUE_DATA}" | jq -r '.projects | join(",")')
