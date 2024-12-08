@@ -15,12 +15,12 @@ jobs:
       - name: Get Issue Number
         id: get_issue
         run: |
-          BRANCH_NAME=${GITHUB_REF_NAME}
+          PR_DATA=gh pr view 59 --json headRefName
+          echo "PR_DATA=${PR_DATA}" >> $GITHUB_ENV
+          BRANCH_NAME=$(echo "${PR_DATA}" | jq -r '.headRefName)
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
-          echo "${BRANCH_NAME}"
           ISSUE_NUMBER=$(echo "${BRANCH_NAME}" | awk -F'#' '{print $2}' | grep -Eo '^[0-9]+')
           echo "ISSUE_NUMBER=${ISSUE_NUMBER}" >> $GITHUB_ENV
-          echo "${ISSUE_NUMBER}"
 
       - name: Get Issue Details
         id: get_issue_details
