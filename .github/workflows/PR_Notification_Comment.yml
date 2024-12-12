@@ -40,13 +40,11 @@ jobs:
 
       - name: Set Environment Variables for Issue
         if: ${{ !github.event.issue.pull_request && contains(github.event.comment.body, '/noti') }}
-        env:
-          CONTENT: ${{ github.event.comment.body }}
         run: |
           echo "COMMENT_AUTHOR=${{ github.event.comment.user.login }}" >> $GITHUB_ENV
           echo "PR_URL=${{ github.event.issue.html_url }}" >> $GITHUB_ENV
           echo "AUTHOR_URL=${{ github.event.comment.user.avatar_url }}" >> $GITHUB_ENV
-          echo "CONTENT=${CONTENT}" >> $GITHUB_ENV
+          echo "CONTENT=$(echo '${{ github.event.review.body }}' | base64)" >> $GITHUB_ENV
 
       - name: Notify Discord
         env:
@@ -57,7 +55,7 @@ jobs:
           COMMENT_AUTHOR: ${{ env.COMMENT_AUTHOR }}
           PR_URL: ${{ env.PR_URL }}
           AUTHOR_URL: ${{ env.AUTHOR_URL }}
-          CONTENT: ${{ env.CONTENT }}
+          CONTENT: ${{ env.CONTENT }} | base64 --decode
         run: |
           if [ -n "$WEB_HOOK" ]; then
             JSON_PAYLOAD=$(jq -n \
