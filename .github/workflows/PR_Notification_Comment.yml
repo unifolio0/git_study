@@ -33,7 +33,7 @@ jobs:
           echo "PR_URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_ENV
           echo "AUTHOR_URL=${{ github.event.review.user.avatar_url }}" >> $GITHUB_ENV
           echo "CONTENT=$(echo '${{ github.event.review.body }}' | base64 -w 0)" >> $GITHUB_ENV
-          echo "COMMENT_BODY=${{ github.event.issue.pull_request.title }}" >> $GITHUB_ENV
+          echo "COMMENT_BODY=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
 
       - name: Set Environment Variables for Issue
         if: ${{ !github.event.issue.pull_request && contains(github.event.comment.body, '/noti') }}
