@@ -55,11 +55,12 @@ jobs:
           COMMENT_AUTHOR: ${{ env.COMMENT_AUTHOR }}
           PR_URL: ${{ env.PR_URL }}
           AUTHOR_URL: ${{ env.AUTHOR_URL }}
-          CONTENT: ${{ env.CONTENT }} | base64 --decode
+          CONTENT: ${{ env.CONTENT }}
         run: |
+          CONTENT_DECODED=$(echo "$CONTENT" | base64 --decode)
           if [ -n "$WEB_HOOK" ]; then
             JSON_PAYLOAD=$(jq -n \
-              --arg content "$CONTENT" \
+              --arg content "$CONTENT_DECODED" \
               --arg description "$COMMENT_BODY" \
               --arg username "$USERNAME" \
               --arg avatar_url "$AVATAR_URL" \
