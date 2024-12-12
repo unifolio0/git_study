@@ -24,7 +24,9 @@ jobs:
           echo "COMMENT_AUTHOR=${{ github.event.comment.user.login }}" >> $GITHUB_ENV
           echo "PR_URL=${{ github.event.issue.pull_request.html_url }}" >> $GITHUB_ENV
           echo "AUTHOR_URL=${{ github.event.comment.user.avatar_url }}" >> $GITHUB_ENV
-          echo "CONTENT=${{ github.event.comment.body }}" >> $GITHUB_ENV
+          cat <<EOF >> $GITHUB_ENV
+          CONTENT=${{ github.event.comment.body }}
+          EOF
 
       - name: Set Environment Variables for PR Review Comment
         if: ${{ contains(github.event.review.body, '/noti') }}
@@ -32,7 +34,9 @@ jobs:
           echo "COMMENT_AUTHOR=${{ github.event.review.user.login }}" >> $GITHUB_ENV
           echo "PR_URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_ENV
           echo "AUTHOR_URL=${{ github.event.review.user.avatar_url }}" >> $GITHUB_ENV
-          echo "CONTENT=${{ github.event.review.body }}" >> $GITHUB_ENV
+          cat <<EOF >> $GITHUB_ENV
+          CONTENT=${{ github.event.review.body }}
+          EOF
 
       - name: Set Environment Variables for Issue
         if: ${{ !github.event.issue.pull_request && contains(github.event.comment.body, '/noti') }}
@@ -40,7 +44,9 @@ jobs:
           echo "COMMENT_AUTHOR=${{ github.event.comment.user.login }}" >> $GITHUB_ENV
           echo "PR_URL=${{ github.event.issue.html_url }}" >> $GITHUB_ENV
           echo "AUTHOR_URL=${{ github.event.comment.user.avatar_url }}" >> $GITHUB_ENV
-          echo "CONTENT=${{ github.event.comment.body }}" >> $GITHUB_ENV
+          cat <<EOF >> $GITHUB_ENV
+          CONTENT=${{ github.event.comment.body }}
+          EOF
 
       - name: Notify Discord
         env:
