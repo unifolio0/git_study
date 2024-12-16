@@ -47,7 +47,7 @@ jobs:
           echo "COMMENT_BODY=${{ github.event.issue.title }}" >> $GITHUB_ENV
           echo "TITLE=Issue" >> $GITHUB_ENV
 
-      - name : Set Discord Content
+      - name: Set Discord Content
         if: ${{ env.CONTENT }}
         env:
           CONTENT: ${{ env.CONTENT }}
@@ -56,16 +56,21 @@ jobs:
 
           content=$(echo "$CONTENT" | base64 --decode)
 
-          echo "$PAIR_JSON" | jq -r '.users | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
+          echo "PAIR_JSON: $PAIR_JSON"
+
+          jq -r '.users | to_entries[] | "\(.key):\(.value)"' <<< "$PAIR_JSON" | while IFS=":" read -r search replace; do
+            echo "Replacing user: @$search with ID: <@$replace>"
             content=$(echo "$content" | sed "s|@${search}|<@${replace}>|g")
           done
 
-          echo "$PAIR_JSON" | jq -r '.roles | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
+          jq -r '.roles | to_entries[] | "\(.key):\(.value)"' <<< "$PAIR_JSON" | while IFS=":" read -r search replace; do
+            echo "Replacing role: @$search with ID: <@&${replace}>"
             content=$(echo "$content" | sed "s|@${search}|<@\&${replace}>|g")
           done
-          echo "${content}"
 
-          echo "DISCORD_CONTENT=$(echo $content | base64 -w 0)" >> $GITHUB_ENV
+          echo "Final Content: $content"
+
+          echo "DISCORD_CONTENT=$(echo "$content" | base64 -w 0)" >> $GITHUB_ENV
 
       - name: Notify Discord
         if: ${{ env.COMMENT_AUTHOR && env.PR_URL && env.AUTHOR_URL && env.DISCORD_CONTENT && env.COMMENT_BODY }}
