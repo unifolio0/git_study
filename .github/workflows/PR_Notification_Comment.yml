@@ -56,19 +56,19 @@ jobs:
 
           content=$(echo "$CONTENT" | base64 --decode)
 
-          echo "PAIR_JSON: $PAIR_JSON"
+          echo "Original Content: '$content'"
 
           jq -r '.users | to_entries[] | "\(.key):\(.value)"' <<< "$PAIR_JSON" | while IFS=":" read -r search replace; do
             echo "Replacing user: @$search with ID: <@$replace>"
-            content=$(echo "$content" | sed "s|@${search}|<@${replace}>|g")
+            content=$(echo "$content" | sed "s|@${search}\\b|<@${replace}>|g")
           done
 
           jq -r '.roles | to_entries[] | "\(.key):\(.value)"' <<< "$PAIR_JSON" | while IFS=":" read -r search replace; do
             echo "Replacing role: @$search with ID: <@&${replace}>"
-            content=$(echo "$content" | sed "s|@${search}|<@\&${replace}>|g")
+            content=$(echo "$content" | sed "s|@${search}\\b|<@\&${replace}>|g")
           done
 
-          echo "Final Content: $content"
+          echo "Final Content: '$content'"
 
           echo "DISCORD_CONTENT=$(echo "$content" | base64 -w 0)" >> $GITHUB_ENV
 
