@@ -63,7 +63,7 @@ jobs:
           echo "$PAIR_JSON" | jq -r '.roles | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
             content=$(echo "$content" | sed "s|@${search}|<@\&${replace}>|g")
           done
-          echo "content"
+          echo "${content}"
 
           echo "DISCORD_CONTENT=$(echo $content | base64 -w 0)" >> $GITHUB_ENV
 
