@@ -54,18 +54,18 @@ jobs:
         run: |
           PAIR_JSON='${{ secrets.DISCORD_MENTION_JSON }}'
 
-          content=$(echo "$CONTENT" | base64 --decode)
+          content=$(echo "$CONTENT" | base64 --decode | tr -d '\r')
 
           echo "Original Content: '$content'"
 
-          jq -r '.users | to_entries[] | "\(.key):\(.value)"' <<< "$PAIR_JSON" | while IFS=":" read -r search replace; do
+          echo "$PAIR_JSON" | jq -r '.users | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
             echo "Replacing user: @$search with ID: <@$replace>"
-            content=$(echo "$content" | sed "s|@${search}\\b|<@${replace}>|g")
+            content=$(echo "$content" | sed "s|@$search\\b|<@$replace>|g")
           done
 
-          jq -r '.roles | to_entries[] | "\(.key):\(.value)"' <<< "$PAIR_JSON" | while IFS=":" read -r search replace; do
-            echo "Replacing role: @$search with ID: <@&${replace}>"
-            content=$(echo "$content" | sed "s|@${search}\\b|<@\&${replace}>|g")
+          echo "$PAIR_JSON" | jq -r '.roles | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
+            echo "Replacing role: @$search with ID: <@&$replace>"
+            content=$(echo "$content" | sed "s|@$search\\b|<@\&$replace>|g")
           done
 
           echo "Final Content: '$content'"
