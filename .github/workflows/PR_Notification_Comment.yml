@@ -1,4 +1,4 @@
-name: Discord Notification on PR Comment
+name: Discord Notification on Issue & PR Comment
 
 on:
   issue_comment:
@@ -47,8 +47,28 @@ jobs:
           echo "COMMENT_BODY=${{ github.event.issue.title }}" >> $GITHUB_ENV
           echo "TITLE=Issue" >> $GITHUB_ENV
 
+      - name : Set Discord Content
+        if: ${{ env.CONTENT }}
+        env:
+          CONTENT: ${{ env.CONTENT }}
+        run: |
+          PAIR_JSON='${{ secrets.DISCORD_MENTION_JSON }}'
+
+          content=$(echo "$CONTENT" | base64 --decode)
+
+          echo "$PAIR_JSON" | jq -r '.users | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
+            content=$(echo "$content" | sed "s|@${search}|<@${replace}>|g")
+          done
+
+          echo "$PAIR_JSON" | jq -r '.roles | to_entries[] | "\(.key):\(.value)"' | while IFS=":" read -r search replace; do
+            content=$(echo "$content" | sed "s|@${search}|<@\&${replace}>|g")
+          done
+          echo "content"
+
+          echo "DISCORD_CONTENT=$(echo $content | base64 -w 0)" >> $GITHUB_ENV
+
       - name: Notify Discord
-        if: ${{ env.COMMENT_AUTHOR && env.PR_URL && env.AUTHOR_URL && env.CONTENT && env.COMMENT_BODY }}
+        if: ${{ env.COMMENT_AUTHOR && env.PR_URL && env.AUTHOR_URL && env.DISCORD_CONTENT && env.COMMENT_BODY }}
         env:
           AVATAR_URL: ${{ env.AVATAR_URL }}
           COMMENT_BODY: ${{ env.COMMENT_BODY }}
@@ -57,10 +77,10 @@ jobs:
           COMMENT_AUTHOR: ${{ env.COMMENT_AUTHOR }}
           PR_URL: ${{ env.PR_URL }}
           AUTHOR_URL: ${{ env.AUTHOR_URL }}
-          CONTENT: ${{ env.CONTENT }}
+          DISCORD_CONTENT: ${{ env.DISCORD_CONTENT }}
           TITLE: ${{ env.TITLE }}
         run: |
-          CONTENT_DECODED=$(echo "$CONTENT" | base64 --decode)
+          CONTENT_DECODED=$(echo "$DISCORD_CONTENT" | base64 --decode)
           if [ -n "$WEB_HOOK" ]; then
             JSON_PAYLOAD=$(jq -n \
               --arg content "$CONTENT_DECODED" \
@@ -77,6 +97,9 @@ jobs:
                 content: $content,
                 username: $username,
                 avatar_url: $avatar_url,
+                allowed_mentions: {
+                  parse: ["users", "roles"]
+                },
                 embeds: [{
                   title: $title,
                   url: $url,
